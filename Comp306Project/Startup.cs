@@ -10,6 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+using Comp306Project.Models;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace Comp306Project
 {
@@ -26,11 +29,22 @@ namespace Comp306Project
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddDbContext<ParkHereContext>(option=>
+            option.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info { Title = "ParkHere", Version = "v1" });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseSwagger();
+            app.UseSwaggerUI(c=>{
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ParkHere");
+            });
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
